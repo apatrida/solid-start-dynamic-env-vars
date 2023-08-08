@@ -83,6 +83,8 @@ export default function Home() {
             <div><span style={"background-color: #600; color: #FFF"} onClick={() => { refetchRouteData() }}>
                 CLICK ME TO REFETCH {data()}
             </span></div>
+            <p>Server user is: {cfg.get("USER")}</p>
+            <p>But we can't see user SHELL or HOME on client (not configured in whitelist): {cfg.get("SHELL")} {cfg.get("HOME")}</p>
         </main>
     );
 }

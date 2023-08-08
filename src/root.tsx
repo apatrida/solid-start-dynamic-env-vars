@@ -33,7 +33,7 @@ export default function Root() {
                         <A href="/about">About</A>
                         <DynamicServerEnvProvider includeEnvVariables={true}
                                                   envVariablePrefix={"VITE_"}
-                                                  envVariableList={["SOMETHING", "WHATEVER"]}
+                                                  envVariableList={["USER", "SOMETHING", "WHATEVER"]}
                                                   customConfiguration={{"foo": "bar"}}>
                             <Routes>
                                 <FileRoutes/>

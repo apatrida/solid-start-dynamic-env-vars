@@ -23,7 +23,7 @@ before running, set these variables to your console:
 export VITE_SOME_VALUE="some_value from VITE prefix"
 export VITE_OTHER_VALUE="other value from VITE prefix"
 export SOMETHING="something directly references"
-export WAHTEVER="whateva"
+export WHATEVER="whateva"
 ```
 
 then you can test in dev mode (but this works dynamically with `VITE_*` already in Solid Start using `import.env.VARNAME`)
