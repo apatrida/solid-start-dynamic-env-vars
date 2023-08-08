@@ -78,13 +78,21 @@ export default function Home() {
             <h1>Hello world!</h1>
             <Counter/>
             <p>
-                configuration{"  " + cfg.get("VITE_SOME_VALUE") + "  " + cfg.get("VITE_OTHER_VALUE")}
+                Configuration:
             </p>
+            <ul>
+                <li>VITE_SOME_VALUE: {cfg.get("VITE_SOME_VALUE")}</li>
+                <li>VITE_OTHER_VALUE: {cfg.get("VITE_OTHER_VALUE")}</li>
+                <li>SOMETHING: {cfg.get("SOMETHING")}</li>
+                <li>WHATEVER: {cfg.get("WHATEVER")}</li>
+                <li>USER: {cfg.get("USER")}</li>
+                <li>SHELL: {cfg.get("SHELL")} (<i>should not be returned, not in whitelist</i>)</li>
+                <li>HOME: {cfg.get("HOME")} (<i>should not be returned, not in whitelist</i>)</li>
+            </ul>
             <div><span style={"background-color: #600; color: #FFF"} onClick={() => { refetchRouteData() }}>
                 CLICK ME TO REFETCH {data()}
             </span></div>
-            <p>Server user is: {cfg.get("USER")}</p>
-            <p>But we can't see user SHELL or HOME on client (not configured in whitelist): {cfg.get("SHELL")} {cfg.get("HOME")}</p>
+
         </main>
     );
 }
