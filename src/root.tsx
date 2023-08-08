@@ -55,9 +55,7 @@ export default function Root() {
                             <A href="/">Index</A>
                             <A href="/about">About</A>
                            <Routes>
-                                <Route path={"/"} data={topLevelRouteData} element={Parenty()}>
-                                   <FileRoutes/>
-                                </Route>
+                                <FileRoutes/>
                             </Routes>
                         </EnvConfigurationProvider>
                     </ErrorBoundary>
