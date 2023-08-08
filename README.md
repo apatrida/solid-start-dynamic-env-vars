@@ -8,8 +8,8 @@ same container to run in various environments.
 branches:
 
 * main (same as broken/loses-counter-on-refetch currently)
-* better-solution (seems to work for every case and doesn't lose data in components)
-* broken/loses-counter-on-refetch (click the div and watch the counter go back to 0)
+* better-solution (seems to work for every case and doesn't lose data in components, but context is lost, and relies on signal to carry data)
+* broken/loses-counter-on-refetch (click the div and watch the counter go back to 0, but context isn't lost other than during refetch, and is restored after)
 * broken/parent-routedata-uses-outer-context (goes to undefined on refetch)
 
 before running, set these variables to your console:
