@@ -1,22 +1,31 @@
 import {Title, useRouteData, createRouteData} from "solid-start";
 import { refetchRouteData } from 'solid-start';
 import Counter from "~/components/Counter";
-import useServerEnvironment, {EnvConfigMap} from "~/lib/EnvConfiguration";
-import {createEffect, onMount} from "solid-js";
+import useServerEnvironment, {DynamicServerEnv, EnvConfigMap} from "~/lib/EnvConfiguration";
+import {createEffect, onMount, Resource} from "solid-js";
+import server$ from 'solid-start/server';
 
 function checkEnvExists(calledWhen: string): EnvConfigMap {
-   return useServerEnvironment(calledWhen)!;
+   return useServerEnvironment(calledWhen);
 }
 
 async function asyncCheckEnvExists(calledWhen: string): Promise<EnvConfigMap> {
    return checkEnvExists(calledWhen);
 }
 
+function getRandomInt(min: number, max: number): number {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
+}
+
 export function routeData() {
+    checkEnvExists("routeData for Home");
+    const cfg = useServerEnvironment("routeData useServerEnvironment call");
+
     return createRouteData(() => {
-        checkEnvExists("routeData for Home");
-        const cfg = useServerEnvironment("routeData useServerEnvironment call");
-        return `DATA!!!! ${cfg["SOME_VALUE"]}`;
+        const x = getRandomInt(1, 10000);
+        return `DATA!!!! ${cfg["SOME_VALUE"]} ${x}`;
     });
 }
 

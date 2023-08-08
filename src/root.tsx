@@ -1,13 +1,6 @@
 // @refresh reload
 import {
-    Accessor,
-    Context,
-    createContext,
-    createSignal,
-    ParentComponent,
-    Resource, Show,
-    Suspense,
-    useContext
+    Suspense
 } from "solid-js";
 import {
     A,
@@ -17,28 +10,13 @@ import {
     Head,
     Html,
     Meta,
-    Route,
     Routes,
     Scripts,
-    Title, useRouteData,
+    Title
 } from "solid-start";
 import "./root.css";
-import {isServer} from "solid-js/web";
-import {Outlet} from "@solidjs/router";
-import {EnvConfigMap, EnvConfigurationProvider, loadEnvironment} from "~/lib/EnvConfiguration";
-import {createServerData$} from "solid-start/server";
+import {DynamicServerEnvProvider} from "~/lib/EnvConfiguration";
 
-const envLoader = () => {
-    return loadEnvironment({
-        includeEnvVariables: true,
-        stripPrefix: true,
-        envVariablePrefix: "VITE_",
-        envVariableList: ["SOMETHING", "WHATEVER"],
-        customConfiguration: { "foo": "bar" }
-    });
-}
-
-const envBaseCfg = envLoader();
 
 export default function Root() {
     return (
@@ -51,41 +29,21 @@ export default function Root() {
             <Body>
                 <Suspense>
                     <ErrorBoundary>
-                        <EnvConfigurationProvider configuration={envBaseCfg}>
-                            <A href="/">Index</A>
-                            <A href="/about">About</A>
-                           <Routes>
-                                <Route path={"/"} data={topLevelRouteData} element={Parenty()}>
-                                   <FileRoutes/>
-                                </Route>
+                        <A href="/">Index</A>
+                        <A href="/about">About</A>
+                        <DynamicServerEnvProvider includeEnvVariables={true}
+                                                  stripPrefix={true}
+                                                  envVariablePrefix={"VITE_"}
+                                                  envVariableList={["SOMETHING", "WHATEVER"]}
+                                                  customConfiguration={{"foo": "bar"}}>
+                            <Routes>
+                                <FileRoutes/>
                             </Routes>
-                        </EnvConfigurationProvider>
+                        </DynamicServerEnvProvider>
                     </ErrorBoundary>
-            </Suspense>
-            <Scripts/>
-        </Body>
-</Html>
-);
-}
-
-
-
-function topLevelRouteData() {
-    return createServerData$(() => {
-        return envBaseCfg || envLoader();
-    });
-}
-
-function Parenty() {
-    const cfg = useRouteData<typeof topLevelRouteData>();
-    cfg(); // server side force relationship to cfg loading change
-    return (<>
-                <hr/>
-                <Show when={cfg.state == "ready"} fallback={<p>Loading...</p>}>
-                            <EnvConfigurationProvider configuration={cfg()!}>
-                                <Outlet/>
-                            </EnvConfigurationProvider>
-                </Show>
-        </>
-    )
+                </Suspense>
+                <Scripts/>
+            </Body>
+        </Html>
+    );
 }

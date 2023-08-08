@@ -1,4 +1,10 @@
-import {Accessor, createContext, createSignal, JSX, mergeProps, ParentComponent, useContext} from "solid-js";
+import {
+    createContext, createResource,
+    mergeProps,
+    ParentComponent,
+    Resource,
+    useContext
+} from "solid-js";
 import {isServer} from "solid-js/web";
 
 export type EnvConfigMap = { [key: string]: string };
@@ -11,12 +17,7 @@ export type EnvConfigurationProps = {
     customConfiguration?: EnvConfigMap
 }
 
-export type EnvProviderProps = {
-    configuration: EnvConfigMap
-}
-
-const EnvConfigurationContext = createContext<EnvConfigMap>();
-const [loadedEnvSignal, loadEnvIntoSignal] = createSignal<EnvConfigMap>({} as EnvConfigMap);
+const EnvConfigurationContext = createContext<Resource<EnvConfigMap>>();
 
 export function loadEnvironment(props: EnvConfigurationProps): EnvConfigMap {
     if (!isServer) return {};
@@ -57,24 +58,29 @@ export function loadEnvironment(props: EnvConfigurationProps): EnvConfigMap {
     return combinedConfig;
 }
 
-export const EnvConfigurationProvider: ParentComponent<EnvProviderProps> = (props) => {
-    loadEnvIntoSignal(props.configuration)
+export const DynamicServerEnvProvider: ParentComponent<EnvConfigurationProps> = (props) => {
+    const [cfgResource] = createResource(() => {
+        return loadEnvironment(props)
+    });
+
     return (
-        <EnvConfigurationContext.Provider value={props.configuration}>
+        <EnvConfigurationContext.Provider value={cfgResource}>
             {props.children}
         </EnvConfigurationContext.Provider>
     );
 }
 
+export interface DynamicServerEnv {
+    get(key: string): string | undefined
+}
+
 // work both within the component stack and a provider, or the global signal otherwise.  Although the global signal
 // will be empty if the context provider isn't in the component stack somewhere.
-export default function useServerEnvironment(testLabel: string) {
+export default function useServerEnvironment(testLabel: string): EnvConfigMap {
     console.log(`useServerEnvironment( ${testLabel} )`);
-    const v1 = useContext(EnvConfigurationContext);
-    console.log(`  useContext    `, JSON.stringify(v1));
-    const v2 = loadedEnvSignal();
-    console.log(`  loadEnvSignal `, JSON.stringify(v2));
-    return v1 || v2; // v1 always works, but this was testing if both were accessible always
+    const cfg = useContext(EnvConfigurationContext);
+    console.log(`  useContext    `, JSON.stringify(cfg?.()));
+    return cfg?.() || {} as EnvConfigMap;
 }
 
 
