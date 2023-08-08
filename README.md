@@ -5,6 +5,13 @@ There is no support for dynamic loading of variables only at runtime. This is pr
 are using containers and do not want to bake in the variables at build time but rather allow the
 same container to run in various environments.
 
+branches:
+
+* main (same as broken/loses-counter-on-refetch currently)
+* better-solution (seems to work for every case and doesn't lose data in components)
+* broken/loses-counter-on-refetch (click the div and watch the counter go back to 0)
+* broken/parent-routedata-uses-outer-context (goes to undefined on refetch)
+
 before running, set these variables to your console:
 
 ```shell
