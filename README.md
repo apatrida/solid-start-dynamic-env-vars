@@ -9,9 +9,9 @@ branches:
 
 * main (so far the best, tuned from feedback from Ryan)
   * Main files to look at:
-    * `root.tsx` (the context provider)
-    * `lib/EnvConfiguration.tsx` (configuration loader, context provider, hook)
-    * `routes/index.tsx` (using the hook in all possible places on client-side for testing including effects, mount, route data, and route data refetch)
+    * [`root.tsx`](src/root.tsx) (the context provider)
+    * [`lib/EnvConfiguration.tsx`](src/lib/EnvConfiguration.tsx) (configuration loader, context provider, hook)
+    * [`routes/index.tsx`](src/routes/index.tsx) (using the hook in all possible places on client-side for testing including effects, mount, route data, and route data refetch)
 * better-solution (seems to work for every case and doesn't lose data in components, but context is lost, and relies on signal to carry data)
 * solution-static-resource (same as main currently)
 * broken/loses-counter-on-refetch (click the div and watch the counter go back to 0, but context isn't lost other than during refetch, and is restored after)
