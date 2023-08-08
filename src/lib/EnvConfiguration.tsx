@@ -15,7 +15,7 @@ export type EnvProviderProps = {
     configuration: EnvConfigMap
 }
 
-const EnvConfigurationContext = createContext<EnvConfigMap>();
+export const EnvConfigurationContext = createContext<EnvConfigMap>();
 const [loadedEnvSignal, loadEnvIntoSignal] = createSignal<EnvConfigMap>({} as EnvConfigMap);
 
 export function loadEnvironment(props: EnvConfigurationProps): EnvConfigMap {

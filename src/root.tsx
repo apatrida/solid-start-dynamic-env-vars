@@ -25,7 +25,7 @@ import {
 import "./root.css";
 import {isServer} from "solid-js/web";
 import {Outlet} from "@solidjs/router";
-import {EnvConfigMap, EnvConfigurationProvider, loadEnvironment} from "~/lib/EnvConfiguration";
+import {EnvConfigMap, EnvConfigurationContext, EnvConfigurationProvider, loadEnvironment} from "~/lib/EnvConfiguration";
 import {createServerData$} from "solid-start/server";
 
 const envLoader = () => {
@@ -77,15 +77,13 @@ function topLevelRouteData() {
 }
 
 function Parenty() {
+    const staticCfg = useContext(EnvConfigurationContext);
     const cfg = useRouteData<typeof topLevelRouteData>();
-    cfg(); // server side force relationship to cfg loading change
     return (<>
                 <hr/>
-                <Show when={cfg.state == "ready"} fallback={<p>Loading...</p>}>
-                            <EnvConfigurationProvider configuration={cfg()!}>
-                                <Outlet/>
-                            </EnvConfigurationProvider>
-                </Show>
+                <EnvConfigurationProvider configuration={cfg() || staticCfg || {} as EnvConfigMap}>
+                    <Outlet/>
+                </EnvConfigurationProvider>
         </>
     )
 }
