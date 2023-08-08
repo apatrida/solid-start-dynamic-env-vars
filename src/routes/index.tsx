@@ -1,15 +1,15 @@
 import {Title, useRouteData, createRouteData} from "solid-start";
 import { refetchRouteData } from 'solid-start';
 import Counter from "~/components/Counter";
-import useServerEnvironment, {DynamicServerEnv, EnvConfigMap} from "~/lib/EnvConfiguration";
-import {createEffect, onMount, Resource} from "solid-js";
+import useServerEnvironment, {DynamicServerEnv} from "~/lib/EnvConfiguration";
+import {createEffect, onMount} from "solid-js";
 import server$ from 'solid-start/server';
 
-function checkEnvExists(calledWhen: string): EnvConfigMap {
+function checkEnvExists(calledWhen: string): DynamicServerEnv {
    return useServerEnvironment(calledWhen);
 }
 
-async function asyncCheckEnvExists(calledWhen: string): Promise<EnvConfigMap> {
+async function asyncCheckEnvExists(calledWhen: string): Promise<DynamicServerEnv> {
    return checkEnvExists(calledWhen);
 }
 
@@ -25,7 +25,7 @@ export function routeData() {
 
     return createRouteData(() => {
         const x = getRandomInt(1, 10000);
-        return `DATA!!!! ${cfg["SOME_VALUE"]} ${x}`;
+        return `DATA!!!! ${cfg.get("SOME_VALUE")} ${x}`;
     });
 }
 
@@ -49,6 +49,18 @@ export default function Home() {
         await asyncCheckEnvExists("async onMount via asyncCheckEnvExists");
     });
 
+    // and server$ calls should work too!
+    onMount(async () => {
+        const serverFunc = server$(() => {
+            const cfg = useServerEnvironment("server$ func!");
+            const value = cfg.get("VITE_SOME_VALUE")
+            console.log("server-side value ", value);
+            return value
+        });
+        const value = await serverFunc();
+        console.log("server$ function returned ", value);
+    })
+
     async function emptyAsync() {}
 
     createEffect(() => {
@@ -66,13 +78,11 @@ export default function Home() {
             <h1>Hello world!</h1>
             <Counter/>
             <p>
-                configuration{"  " + cfg["SOME_VALUE"] + "  " + cfg["OTHER_VALUE"]}
+                configuration{"  " + cfg.get("VITE_SOME_VALUE") + "  " + cfg.get("VITE_OTHER_VALUE")}
             </p>
-            <p onClick={() => { refetchRouteData() }}>
+            <div><span style={"background-color: #600; color: #FFF"} onClick={() => { refetchRouteData() }}>
                 CLICK ME TO REFETCH {data()}
-            </p>
-            <br/>
-            <pre><code>{JSON.stringify(cfg)}</code></pre>
+            </span></div>
         </main>
     );
 }

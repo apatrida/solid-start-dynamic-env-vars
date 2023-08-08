@@ -7,19 +7,18 @@ import {
 } from "solid-js";
 import {isServer} from "solid-js/web";
 
-export type EnvConfigMap = { [key: string]: string };
+type EnvConfigMap = { [key: string]: string };
+
+const EnvConfigurationContext = createContext<Resource<EnvConfigMap>>();
 
 export type EnvConfigurationProps = {
     includeEnvVariables: Boolean,
     envVariablePrefix?: string,
     envVariableList: string[],
-    stripPrefix: Boolean,
     customConfiguration?: EnvConfigMap
 }
 
-const EnvConfigurationContext = createContext<Resource<EnvConfigMap>>();
-
-export function loadEnvironment(props: EnvConfigurationProps): EnvConfigMap {
+function loadEnvironment(props: EnvConfigurationProps): EnvConfigMap {
     if (!isServer) return {};
 
     console.log("Loading ENV on server");
@@ -28,7 +27,6 @@ export function loadEnvironment(props: EnvConfigurationProps): EnvConfigMap {
         includeEnvVariables: true,
         envVariablePrefix: "",
         envVariableList: [],
-        stripPrefix: false,
         customConfiguration: {}
     } satisfies EnvConfigurationProps, props);
 
@@ -46,7 +44,6 @@ export function loadEnvironment(props: EnvConfigurationProps): EnvConfigMap {
     const fromEnvironmentPrefix = (settings.includeEnvVariables && hasEnvPrefix)
         ? Object.fromEntries(Object.entries(process.env)
             .filter(([key, value]) => key.startsWith(filterPrefix) && value)
-            .map(([key, value]) => settings.stripPrefix ? [key.slice(filterPrefix.length), value] : [key, value])
         ) as EnvConfigMap
         : {};
     const fromEnvironmentList = (settings.includeEnvVariables && hasEnvNameList)
@@ -76,11 +73,21 @@ export interface DynamicServerEnv {
 
 // work both within the component stack and a provider, or the global signal otherwise.  Although the global signal
 // will be empty if the context provider isn't in the component stack somewhere.
-export default function useServerEnvironment(testLabel: string): EnvConfigMap {
-    console.log(`useServerEnvironment( ${testLabel} )`);
+export default function useServerEnvironment(testLabel: string): DynamicServerEnv {
+    console.log(`useServerEnvironment( ${testLabel} ), isServer: `, isServer);
     const cfg = useContext(EnvConfigurationContext);
     console.log(`  useContext    `, JSON.stringify(cfg?.()));
-    return cfg?.() || {} as EnvConfigMap;
+
+    return isServer && !cfg ? {
+            get(key: string): string | undefined {
+                return process.env[key]
+            }
+        }
+        : {
+            get(key: string): string | undefined {
+                return (cfg?.() || {} as EnvConfigMap)[key];
+            }
+        };
 }
 
 

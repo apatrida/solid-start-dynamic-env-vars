@@ -32,7 +32,6 @@ export default function Root() {
                         <A href="/">Index</A>
                         <A href="/about">About</A>
                         <DynamicServerEnvProvider includeEnvVariables={true}
-                                                  stripPrefix={true}
                                                   envVariablePrefix={"VITE_"}
                                                   envVariableList={["SOMETHING", "WHATEVER"]}
                                                   customConfiguration={{"foo": "bar"}}>
