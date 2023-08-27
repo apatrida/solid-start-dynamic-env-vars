@@ -1,9 +1,9 @@
 import {Title, useRouteData, createRouteData} from "solid-start";
-import { refetchRouteData } from 'solid-start';
+import {refetchRouteData} from 'solid-start';
 import Counter from "~/components/Counter";
 import {createEffect, onMount} from "solid-js";
-import server$ from 'solid-start/server';
-import {useSafeServerEnv} from "~/lib/useSafeServerEnv";
+import server$, {createServerData$} from 'solid-start/server';
+import {useSafeServerEnv, useServerEnv$} from "~/lib/useSafeServerEnv";
 
 function getRandomInt(min: number, max: number): number {
     min = Math.ceil(min);
@@ -12,14 +12,29 @@ function getRandomInt(min: number, max: number): number {
 }
 
 export function routeData() {
-    // important this is called here and captured here, as the nested function will not be able to reliably
-    // get the context in some cases (such as during refetchRouteData)
     const cfg = useSafeServerEnv();
 
-    return createRouteData(() => {
-        const x = getRandomInt(1, 10000);
-        return `DATA!!!! ${cfg.getOptional("SOME_VALUE")} ${x}`;
-    });
+    return {
+        canBeClient: createRouteData(() => {
+            // use captured cfg so that this works during refetchRouteData, otherwise will be undefined
+            return `${cfg.getOptional("SOMETHING")} ${getRandomInt(1000, 9999)}`;
+        }),
+        onlyServer: createServerData$(() => {
+            const cfg = useServerEnv$();
+            console.log("In createServerData$ 1, passed value of `VITE_SOME_VALUE`: ", cfg.getRequired("VITE_SOME_VALUE"));
+            console.log("in createServerData$ 1, passed value of `USER`: ", cfg.getRequired("USER"));
+
+            return `${cfg.getOptional("SOMETHING")} ${getRandomInt(1000, 9999)}`;
+        }),
+        onlyServerViaKey: createServerData$(([somethingValue, viteValue, userValue]) => {
+            console.log("In createServerData$ 2, passed value of `VITE_SOME_VALUE`: ", viteValue);
+            console.log("in createServerData$ 2, passed value of `USER`: ", userValue);
+
+            return `${somethingValue} ${getRandomInt(1000, 9999)}`;
+        }, {
+            key: () => [cfg.getOptional("SOMETHING"), cfg.getRequired("VITE_SOME_VALUE"), cfg.getRequired("USER")]
+        })
+    };
 }
 
 export default function Home() {
@@ -70,19 +85,27 @@ export default function Home() {
             <p>
                 Configuration:
             </p>
-            <ul>
-                <li>VITE_SOME_VALUE: {cfg.getRequired("VITE_SOME_VALUE")}</li>
-                <li>VITE_OTHER_VALUE: {cfg.getRequired("VITE_OTHER_VALUE")}</li>
-                <li>SOMETHING: {cfg.getRequired("SOMETHING")}</li>
-                <li>WHATEVER: {cfg.getRequired("WHATEVER")}</li>
-                <li>USER: {cfg.getRequired("USER")}</li>
-                <li>SHELL: {cfg.getOptional("SHELL")} (<i>should not be returned, not in whitelist</i>)</li>
-                <li>HOME: {cfg.getOptional("HOME")} (<i>should not be returned, not in whitelist</i>)</li>
-            </ul>
+
+            <div>VITE_SOME_VALUE: {cfg.getRequired("VITE_SOME_VALUE")}</div>
+            <div>VITE_OTHER_VALUE: {cfg.getRequired("VITE_OTHER_VALUE")}</div>
+            <div>SOMETHING: {cfg.getRequired("SOMETHING")}</div>
+            <div>WHATEVER: {cfg.getRequired("WHATEVER")}</div>
+            <div>USER: {cfg.getRequired("USER")}</div>
+            <div>SHELL: {cfg.getOptional("SHELL")} (<i>should not be returned, not in whitelist</i>)</div>
+            <div>HOME: {cfg.getOptional("HOME")} (<i>should not be returned, not in whitelist</i>)</div>
+            <div>&nbsp;</div>
             {/* important that refretch does not lose the context of the env variables */}
-            <div><span style={"background-color: #600; color: #FFF"} onClick={() => { refetchRouteData() }}>
-                CLICK ME TO REFETCH {data()} (should not break counter or other state)
-            </span></div>
+            <div>
+                <div style={"background-color: #600; color: #FFF"} onClick={() => {
+                    refetchRouteData()
+                }}>
+                    CLICK ME TO REFETCH (should not break counter or other state)
+                </div>
+                <div>&nbsp;</div>
+                <div>routeData client-only: {data.canBeClient()} </div>
+                <div>routeData server: {data.onlyServer()} </div>
+                <div>routeData server via key: {data.onlyServerViaKey()}</div>
+            </div>
 
         </main>
     );
