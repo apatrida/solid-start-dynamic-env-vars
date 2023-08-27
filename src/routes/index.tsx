@@ -3,7 +3,7 @@ import {refetchRouteData} from 'solid-start';
 import Counter from "~/components/Counter";
 import {createEffect, onMount} from "solid-js";
 import server$, {createServerData$} from 'solid-start/server';
-import {useSafeServerEnv, useServerEnv$} from "~/lib/useSafeServerEnv";
+import {useSafeServerEnv, useServerEnv$, useServerEnvFromContext} from "~/lib/useSafeServerEnv";
 
 function getRandomInt(min: number, max: number): number {
     min = Math.ceil(min);
@@ -41,13 +41,13 @@ export default function Home() {
     const data = useRouteData<typeof routeData>();
 
     onMount(() => {
-        const cfg = useSafeServerEnv();
+        const cfg = useServerEnvFromContext();
         console.log("In onMount, value of `VITE_SOME_VALUE`: ", cfg.getRequired("VITE_SOME_VALUE"));
         console.log("in onMount, value of `USER`: ", cfg.getRequired("USER"));
     });
 
     onMount(async () => {
-        const cfg = useSafeServerEnv();
+        const cfg = useServerEnvFromContext();
         console.log("In onMount async, value of `VITE_SOME_VALUE`: ", cfg.getRequired("VITE_SOME_VALUE"));
         console.log("in onMount async, value of `USER`: ", cfg.getRequired("USER"));
     });
@@ -55,7 +55,7 @@ export default function Home() {
     // and server$ calls should work too!
     onMount(async () => {
         const serverFunc = server$(() => {
-            const cfg = useSafeServerEnv();
+            const cfg = useServerEnv$();
             console.log("In server$ call, value of `VITE_SOME_VALUE`: ", cfg.getRequired("VITE_SOME_VALUE"));
             console.log("In server$ call, value of `USER`: ", cfg.getRequired("USER"));
             return cfg.getRequired("SOMETHING");
@@ -65,17 +65,20 @@ export default function Home() {
     });
 
     createEffect(() => {
-        const cfg = useSafeServerEnv();
+        const cfg = useServerEnvFromContext();
         console.log("In createEffect, value of `VITE_SOME_VALUE`: ", cfg.getRequired("VITE_SOME_VALUE"));
         console.log("in createEffect, value of `USER`: ", cfg.getRequired("USER"));
     });
 
     createEffect(async () => {
+        const cfg = useServerEnvFromContext();
         console.log("In createEffect async, value of `VITE_SOME_VALUE`: ", cfg.getRequired("VITE_SOME_VALUE"));
         console.log("in createEffect async, value of `USER`: ", cfg.getRequired("USER"));
     })
 
-    const cfg = useSafeServerEnv();
+    // Here we use only from context provider to ensure we don't accidentally pick up the server version since component
+    // body and rendering should always have a provider.
+    const cfg = useServerEnvFromContext();
 
     return (
         <main>

@@ -4,31 +4,31 @@ import {EnvConfigMap, EnvConfigurationContext} from "./SafeServerEnv";
 
 export interface DynamicServerEnv {
     getRequired(key: string): string
+
     getOptional(key: string, defaultValue?: string): string | undefined
 }
 
 export function useServerEnv$(): DynamicServerEnv {
-    if (isServer) {
-        return {
-            getOptional(key: string, defaultValue?: string): string | undefined {
-                const value = process.env[key] || defaultValue;
-                if (value?.trim() === '') return undefined;
-                return value;
-            },
-            getRequired(key: string): string {
-                const value = this.getOptional(key);
-                if (!value) {
-                    throw Error(`Attempt to access MISSING unsafe server env key ${key} from server.`);
-                }
-                return value;
-            }
-        };
-    } else {
+    if (!isServer) {
         throw Error("Cannot access useServerEnv$ from client");
     }
+    return {
+        getOptional(key: string, defaultValue?: string): string | undefined {
+            const value = process.env[key] || defaultValue;
+            if (value?.trim() === '') return undefined;
+            return value;
+        },
+        getRequired(key: string): string {
+            const value = this.getOptional(key);
+            if (!value) {
+                throw Error(`Attempt to access MISSING unsafe server env key ${key} from server.`);
+            }
+            return value;
+        }
+    };
 }
 
-export function useServerEnvFromClient(cfg: Resource<EnvConfigMap>|undefined = useContext(EnvConfigurationContext)): DynamicServerEnv {
+export function useServerEnvFromContext(cfg: Resource<EnvConfigMap> | undefined = useContext(EnvConfigurationContext)): DynamicServerEnv {
     if (!cfg) {
         throw Error("Cannot access useServerEnvFromClient if not under a context provider for the server configuration");
     }
@@ -50,15 +50,16 @@ export function useServerEnvFromClient(cfg: Resource<EnvConfigMap>|undefined = u
 }
 
 export function useSafeServerEnv(): DynamicServerEnv {
-    const cfg = useContext(EnvConfigurationContext);
+    // This method is less safe as we could end up with server environment during SSR in places you want the limited
+    // environment, so this checks that if the provided context version is available use it always before allowing
+    // direct server access to process.env, EVEN when on the server.  It is probably better to use one of the versions
+    // above to assert the intent.
 
-    // sometimes you are on the server, but the limited configuration is available.  This indicates that we are
-    // within the same component tree as the provider, and likely server-side rendering. Therefore we should not
-    // access anything not intended for the client.
+    const cfg = useContext(EnvConfigurationContext);
 
     if (isServer && !cfg) { // !cfg ensures we are not in the rendering tree
         return useServerEnv$();
     } else {
-        return useServerEnvFromClient(cfg);
+        return useServerEnvFromContext(cfg);
     }
 }

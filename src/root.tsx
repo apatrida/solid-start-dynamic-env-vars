@@ -31,6 +31,7 @@ export default function Root() {
                     <ErrorBoundary>
                         <A href="/">Index</A>
                         <A href="/about">About</A>
+                        {/* This must be added before Routes if you want other routeData to read these variables on client */}
                         <SafeServerEnvProvider includeEnvVariables={true}
                                                   envVariablePrefix={"VITE_"}
                                                   envVariableList={["USER", "SOMETHING", "WHATEVER"]}
