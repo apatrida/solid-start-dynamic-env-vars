@@ -7,7 +7,8 @@ same container to run in various environments.
 
 The main files to look at:
 * [`root.tsx`](src/root.tsx) (the context provider)
-* [`lib/EnvConfiguration.tsx`](src/lib/EnvConfiguration.tsx) (configuration loader, context provider, hook)
+* [`lib/SafeServerEnv.tsx`](src/lib/SafeServerEnv.tsx) (configuration loader, context provider)
+* ['lib/useSafeServerEnv.tsx`](src/lib/useSafeServerEnv.ts) (hook, helper to get the environment)
 * [`routes/index.tsx`](src/routes/index.tsx) (using the hook in all possible places on client-side for testing including effects, mount, route data, and route data refetch)
 
 All other branches other than `main` are various attempts with different problems.  The final answer turns out to be the most straight forward and better code.

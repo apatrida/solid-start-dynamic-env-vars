@@ -15,7 +15,7 @@ import {
     Title
 } from "solid-start";
 import "./root.css";
-import {DynamicServerEnvProvider} from "~/lib/EnvConfiguration";
+import {SafeServerEnvProvider} from "~/lib/SafeServerEnv";
 
 
 export default function Root() {
@@ -31,14 +31,14 @@ export default function Root() {
                     <ErrorBoundary>
                         <A href="/">Index</A>
                         <A href="/about">About</A>
-                        <DynamicServerEnvProvider includeEnvVariables={true}
+                        <SafeServerEnvProvider includeEnvVariables={true}
                                                   envVariablePrefix={"VITE_"}
                                                   envVariableList={["USER", "SOMETHING", "WHATEVER"]}
                                                   customConfiguration={{"foo": "bar"}}>
                             <Routes>
                                 <FileRoutes/>
                             </Routes>
-                        </DynamicServerEnvProvider>
+                        </SafeServerEnvProvider>
                     </ErrorBoundary>
                 </Suspense>
                 <Scripts/>

@@ -7,11 +7,11 @@ import {
 } from "solid-js";
 import {isServer} from "solid-js/web";
 
-type EnvConfigMap = { [key: string]: string };
+export type EnvConfigMap = { [key: string]: string };
 
-const EnvConfigurationContext = createContext<Resource<EnvConfigMap>>();
+export const EnvConfigurationContext = createContext<Resource<EnvConfigMap>>();
 
-export type EnvConfigurationProps = {
+type EnvConfigurationProps = {
     includeEnvVariables: Boolean,
     envVariablePrefix?: string,
     envVariableList: string[],
@@ -20,8 +20,6 @@ export type EnvConfigurationProps = {
 
 function loadEnvironment(props: EnvConfigurationProps): EnvConfigMap {
     if (!isServer) return {};
-
-    console.log("Loading ENV on server");
 
     const settings = mergeProps({
         includeEnvVariables: true,
@@ -50,12 +48,10 @@ function loadEnvironment(props: EnvConfigurationProps): EnvConfigMap {
         ? Object.fromEntries(Object.entries(process.env)
             .filter(([key, value]) => value && filterNames.has(key.trim()))) as EnvConfigMap
         : {};
-    const combinedConfig = {...settings.customConfiguration, ...fromEnvironmentPrefix, ...fromEnvironmentList};
-
-    return combinedConfig;
+    return {...settings.customConfiguration, ...fromEnvironmentPrefix, ...fromEnvironmentList};
 }
 
-export const DynamicServerEnvProvider: ParentComponent<EnvConfigurationProps> = (props) => {
+export const SafeServerEnvProvider: ParentComponent<EnvConfigurationProps> = (props) => {
     const [cfgResource] = createResource(() => {
         return loadEnvironment(props)
     });
@@ -67,27 +63,6 @@ export const DynamicServerEnvProvider: ParentComponent<EnvConfigurationProps> = 
     );
 }
 
-export interface DynamicServerEnv {
-    get(key: string): string | undefined
-}
 
-// work both within the component stack and a provider, or the global signal otherwise.  Although the global signal
-// will be empty if the context provider isn't in the component stack somewhere.
-export default function useServerEnvironment(testLabel: string): DynamicServerEnv {
-    console.log(`useServerEnvironment( ${testLabel} ), isServer: `, isServer);
-    const cfg = useContext(EnvConfigurationContext);
-    console.log(`  useContext    `, JSON.stringify(cfg?.()));
-
-    return isServer && !cfg ? {
-            get(key: string): string | undefined {
-                return process.env[key]
-            }
-        }
-        : {
-            get(key: string): string | undefined {
-                return (cfg?.() || {} as EnvConfigMap)[key];
-            }
-        };
-}
 
 
